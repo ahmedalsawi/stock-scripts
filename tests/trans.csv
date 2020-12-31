@@ -2,7 +2,10 @@ date,symbol,sell or buy,price,Number of shares
 2/2/2020,AAPL,buy,10,100
 2/2/2020,AAPL,buy,15,100
 2/2/2020,AAPL,sell,15,50
+2/2/2020,MSFT,buy,10,100
 2/2/2020,AAPL,sell,5,60
 2/2/2020,AAPL,buy,15,100
-2/2/2020,AAPL,sell,15,30
-2/2/2020,AAPL,sell,15,44
+2/2/2020,AAPL,sell,20,30
+2/2/2020,MSFT,sell,15,40
+2/2/2020,AAPL,sell,10,44
+

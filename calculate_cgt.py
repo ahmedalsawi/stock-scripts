@@ -1,44 +1,40 @@
 import pandas
 
+import argparse
+
+
+parser = argparse.ArgumentParser(description="Calculate CGT for stocks")
+
+parser.add_argument("Path", metavar="path", type=str, help="Path to input csv")
+parser.add_argument("--output", action="store", type=str)
+
+args = parser.parse_args()
+
 df = pandas.read_csv(
-    "trans.csv",
-    # parse_dates=["date"],
-    # index_col='symbol',
+    args.Path,
+    parse_dates=["date"],
 )
 
-# print(df)
-# syms = df['symbol'].unique
-
-# for sym in df['symbol'].unique():
-#     print(f"====== Transactions for {sym}")
-#     for i in range(len(df)) :
-#         if df.loc[i,'symbol'] == sym:
-#             print(df.loc[i])
-
+df["taxed"] = len(df) * [0]
+df["profit"] = len(df) * [0]
 
 for sym in df["symbol"].unique():
-    print(f"====== Transactions for {sym}")
-    sdf = df.loc[df["symbol"] == sym]
-
-    sdf_buy = sdf.loc[sdf["sell or buy"] == "buy"]
-    tax_calc = [0] * len(sdf_buy)
-    sdf_buy["tax_calc"] = tax_calc
-    # print(sdf_buy)
-
-    sdf_sell = sdf.loc[sdf["sell or buy"] == "sell"]
-    # print(sdf_sell)
-
     total_profit = 0
 
-    for i, sell in sdf_sell.iterrows():
+    for i_sell, sell in df.loc[
+        (df["symbol"] == sym) & (df["sell or buy"] == "sell")
+    ].iterrows():
+
         sell_total = sell["price"] * sell["Number of shares"]
         buy_total = 0
 
         req = sell["Number of shares"]
         rem = 0
 
-        for i, buy in sdf_buy.iterrows():
-            rem = buy["Number of shares"] - buy["tax_calc"]
+        for i, buy in df.loc[
+            (df["symbol"] == sym) & (df["sell or buy"] == "buy")
+        ].iterrows():
+            rem = buy["Number of shares"] - buy["taxed"]
 
             if req == 0:
                 break
@@ -53,14 +49,16 @@ for sym in df["symbol"].unique():
                 buy_total += req * buy["price"]
                 rem = rem - req
                 req = 0
-
-            sdf_buy.at[i, "tax_calc"] = buy["Number of shares"] - rem
+            df.at[i, "taxed"] = buy["Number of shares"] - rem
 
         assert req == 0
 
-        # print(
-        #     f"sell_total = {sell_total}, Buy total = {buy_total} profit={sell_total - buy_total}"
-        # )
+        df.at[i_sell, "profit"] = sell_total - buy_total
+
         total_profit += sell_total - buy_total
+
 print(f"Total profit = {total_profit}")
-# print(sdf_buy)
+print(df)
+
+if args.output is not None:
+    df.to_csv(args.output, index=False)
