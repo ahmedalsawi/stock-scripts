@@ -15,7 +15,7 @@ df = pandas.read_csv(
     parse_dates=["date"],
 )
 
-df["taxed"] = len(df) * [0]
+df["sold"] = len(df) * [0]
 df["profit"] = len(df) * [0]
 
 for sym in df["symbol"].unique():
@@ -34,7 +34,7 @@ for sym in df["symbol"].unique():
         for i, buy in df.loc[
             (df["symbol"] == sym) & (df["sell or buy"] == "buy")
         ].iterrows():
-            rem = buy["Number of shares"] - buy["taxed"]
+            rem = buy["Number of shares"] - buy["sold"]
 
             if req == 0:
                 break
@@ -49,7 +49,7 @@ for sym in df["symbol"].unique():
                 buy_total += req * buy["price"]
                 rem = rem - req
                 req = 0
-            df.at[i, "taxed"] = buy["Number of shares"] - rem
+            df.at[i, "sold"] = buy["Number of shares"] - rem
 
         assert req == 0
 
